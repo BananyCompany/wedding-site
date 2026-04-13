@@ -289,14 +289,8 @@ function initCarousel(prevBtnId, nextBtnId, trackId) {
 async function initLogo() {
     const wrapper = document.getElementById('logo-wrapper');
     if (!wrapper) return;
-    try {
-        const res = await fetch('assets/Logo_grey-2-3.svg');
-        if (!res.ok) throw new Error();
-        const svgData = await res.text();
-        wrapper.innerHTML = svgData;
-    } catch (e) {
-        wrapper.innerHTML = '<img src="assets/Logo_grey-2-3.svg" alt="Yablonsky Video">';
-    }
+
+    wrapper.innerHTML = '<img src="assets/Logo_grey-2-3.svg" alt="Yablonsky Video">';
 
     const mode = siteData.snowMode || 'logo';
     if (mode === 'none') return;
@@ -310,6 +304,7 @@ async function initLogo() {
     for (let i = 0; i < count; i++) {
         const snow = document.createElement('div');
         snow.className = 'snow-particle';
+
         const size = Math.random() * 3 + 1;
         snow.style.width = `${size}px`;
         snow.style.height = `${size}px`;
@@ -317,6 +312,7 @@ async function initLogo() {
         snow.style.top = `-25px`;
         snow.style.animationDuration = `${Math.random() * 4 + 3}s`;
         snow.style.animationDelay = `${Math.random() * 2}s`;
+
         snowWrapper.appendChild(snow);
     }
 }
