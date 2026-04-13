@@ -53,6 +53,7 @@ body {
     transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1), background-color 0.4s ease, border-color 0.4s ease;
     transform: translateZ(0);
     will-change: transform, background-color;
+    min-height: 80px;
 }
 
 .header--hidden {
