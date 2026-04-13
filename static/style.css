@@ -32,7 +32,7 @@ body {
     color: var(--text);
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
-    transition: none;
+    transition: background-color 0.4s ease, color 0.4s ease;
     line-height: 1.6;
     overflow-x: hidden;
 }
