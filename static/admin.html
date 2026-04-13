@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Адмін-панель CMS | Yablonsky Video</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #0a0a0a; color: #fff; margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 250px; background: #111; padding: 30px 20px; border-right: 1px solid #333; overflow-y: auto; flex-shrink: 0; }
+        .sidebar h2 { font-weight: 300; color: #d4af37; margin-bottom: 40px; font-size: 20px; letter-spacing: 1px; }
+        .menu-btn { display: block; width: 100%; background: none; border: none; color: #aaa; text-align: left; padding: 15px; font-size: 14px; cursor: pointer; transition: 0.3s; margin-bottom: 5px; font-family: 'Montserrat', sans-serif; text-transform: uppercase; }
+        .menu-btn:hover, .menu-btn.active { background: #222; color: #d4af37; border-radius: 4px; }
+        .main-content { flex: 1; padding: 50px; overflow-y: auto; overflow-x: hidden; }
+        .panel-section { display: none; max-width: 800px; width: 100%; }
+        .panel-section.active { display: block; }
+        h1 { font-weight: 300; margin-bottom: 30px; font-size: 28px; }
+        .form-group { margin-bottom: 25px; background: #111; padding: 20px; border-radius: 8px; border: 1px solid #222; position: relative; overflow: hidden; }
+        label { display: block; margin-bottom: 10px; font-size: 14px; font-weight: 500; color: #ccc; margin-top: 15px; }
+        label:first-child { margin-top: 0; }
+        input[type="text"], input[type="url"], input[type="password"], textarea { width: 100%; padding: 15px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box; font-family: 'Montserrat', sans-serif; font-size: 14px; margin-bottom: 10px; }
+        textarea { resize: vertical; min-height: 100px; }
+        .file-upload { background: #000; padding: 10px; border: 1px solid #333; width: 100%; border-radius: 4px; color: #fff; margin-bottom: 10px; cursor: pointer; }
+        .preview-img { max-width: 100%; height: 200px; object-fit: cover; border-radius: 4px; display: none; margin-top: 10px; }
+        .preview-avatar { width: 100px; height: 100px; object-fit: cover; border-radius: 50%; display: none; margin-top: 10px; }
+        .save-btn { background: #d4af37; color: #000; border: none; padding: 15px 40px; cursor: pointer; font-weight: 700; border-radius: 4px; margin-top: 20px; font-family: 'Montserrat', sans-serif; letter-spacing: 1px; text-transform: uppercase; transition: 0.3s; width: 100%; }
+        .save-btn:hover { background: #b59551; }
+        .delete-btn { position: absolute; top: 15px; right: 15px; background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .add-btn { background: #222; color: #fff; border: 1px dashed #555; padding: 15px; width: 100%; cursor: pointer; border-radius: 4px; margin-bottom: 20px; transition: 0.3s; }
+        .add-btn:hover { background: #333; }
+        #toast { position: fixed; bottom: 20px; right: 20px; background: #4caf50; color: white; padding: 15px 25px; border-radius: 4px; display: none; z-index: 1000; }
+        #toast.error { background: #f44336; }
+        .hidden-data { display: none !important; }
+        .lang-badge { display: inline-block; background: #333; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 10px; color: #d4af37; }
+        .radio-group { display: flex; gap: 20px; margin-top: 10px; }
+        .radio-item { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+        .radio-item input { margin: 0; width: auto; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <h2>Yablonsky Admin</h2>
+    <button class="menu-btn active" onclick="switchTab('about')">Про нас</button>
+    <button class="menu-btn" onclick="switchTab('portfolio')">Портфоліо</button>
+    <button class="menu-btn" onclick="switchTab('prices')">Прайс</button>
+    <button class="menu-btn" onclick="switchTab('reviews')">Відгуки</button>
+    <button class="menu-btn" onclick="switchTab('contacts')">Контакти</button>
+    <a href="/" style="display:block; margin-top:50px; color:#666; text-decoration:none; padding:15px;">← На сайт</a>
+</div>
+
+<div class="main-content">
+    <div class="form-group">
+        <label>Пароль адміністратора (для збереження):</label>
+        <input type="password" id="admin-pass" placeholder="Введіть пароль">
+    </div>
+
+    <div id="about" class="panel-section active">
+        <h1>Блок "Про нас"</h1>
+        <div class="form-group">
+            <label>Фотографія</label>
+            <input type="file" class="file-upload" accept="image/*" onchange="encodeImageFileAsURL(this, 'about-b64', 'about-preview')">
+            <input type="text" id="about-b64" class="hidden-data">
+            <img id="about-preview" class="preview-img">
+        </div>
+        <div class="form-group">
+            <label>Текст опису <span class="lang-badge">Українська</span></label>
+            <textarea id="about-text-uk" rows="8"></textarea>
+
+            <label>Текст опису <span class="lang-badge">English</span></label>
+            <textarea id="about-text-en" rows="8"></textarea>
+        </div>
+        <button class="save-btn" onclick="saveData()">Зберегти зміни</button>
+    </div>
+
+    <div id="portfolio" class="panel-section">
+        <h1>Керування Портфоліо</h1>
+        <p style="color:#aaa; font-size:12px; margin-bottom:20px;">Максимум 10 посилань на категорію.</p>
+        <div class="form-group">
+            <label>Весілля (по одному посиланню на рядок)</label>
+            <textarea id="port-wedding" rows="6"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Лав Сторі</label>
+            <textarea id="port-lovestory" rows="6"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Сімейні/Хрестини</label>
+            <textarea id="port-family" rows="6"></textarea>
+        </div>
+        <button class="save-btn" onclick="saveData()">Зберегти зміни</button>
+    </div>
+
+    <div id="prices" class="panel-section">
+        <h1>Керування Прайсом</h1>
+        <div id="prices-container"></div>
+        <button class="save-btn" onclick="saveData()">Зберегти зміни</button>
+    </div>
+
+    <div id="reviews" class="panel-section">
+        <h1>Відгуки Клієнтів</h1>
+        <div id="reviews-container"></div>
+        <button class="add-btn" onclick="addReview()">+ Додати відгук</button>
+        <button class="save-btn" onclick="saveData()">Зберегти зміни</button>
+    </div>
+
+    <div id="contacts" class="panel-section">
+        <h1>Налаштування сайту</h1>
+        <div class="form-group">
+            <label>Ефект снігу в шапці</label>
+            <div class="radio-group">
+                <label class="radio-item"><input type="radio" name="snow-mode" value="none"> Вимкнути сніг</label>
+                <label class="radio-item"><input type="radio" name="snow-mode" value="logo"> Сніг тільки на лого</label>
+                <label class="radio-item"><input type="radio" name="snow-mode" value="header"> Сніг на всю панель</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Заголовок <span class="lang-badge">Українська</span></label>
+            <input type="text" id="contact-title-uk">
+            <label>Заголовок <span class="lang-badge">English</span></label>
+            <input type="text" id="contact-title-en">
+
+            <label>Підзаголовок <span class="lang-badge">Українська</span></label>
+            <input type="text" id="contact-subtitle-uk">
+            <label>Підзаголовок <span class="lang-badge">English</span></label>
+            <input type="text" id="contact-subtitle-en">
+        </div>
+        <div class="form-group" style="margin-top: 20px;">
+            <label>Спільне посилання для кнопок "Замовити"</label>
+            <input type="text" id="contact-order">
+            <label>Телефон 1</label>
+            <input type="text" id="contact-p1">
+            <label>Телефон 2</label>
+            <input type="text" id="contact-p2">
+            <label>Instagram</label>
+            <input type="text" id="contact-ig">
+            <label>Telegram</label>
+            <input type="text" id="contact-tg">
+            <label>TikTok</label>
+            <input type="text" id="contact-tt">
+            <label>Facebook</label>
+            <input type="text" id="contact-fb">
+        </div>
+        <button class="save-btn" onclick="saveData()">Зберегти зміни</button>
+    </div>
+</div>
+
+<div id="toast">Дані збережено! Оновіть головну сторінку.</div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.panel-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function encodeImageFileAsURL(element, hiddenId, previewId) {
+        const file = element.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                document.getElementById(hiddenId).value = reader.result;
+                const preview = document.getElementById(previewId);
+                preview.src = reader.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    const defaultData = {
+        portfolio: { wedding: [], lovestory: [], family: [] },
+        aboutImage: '',
+        aboutTextUk: '',
+        aboutTextEn: '',
+        snowMode: 'logo',
+        prices: [],
+        reviews: [],
+        contacts: { titleUk: '', titleEn: '', subtitleUk: '', subtitleEn: '', phone1: '', phone2: '', instagram: '', telegram: '', tiktok: '', facebook: '', orderLink: '' }
+    };
+
+    let siteData = defaultData;
+
+    async function initAdmin() {
+        try {
+            const response = await fetch('/api/data');
+            if (response.ok) {
+                const data = await response.json();
+                if (Object.keys(data).length > 0) {
+                    siteData = data;
+                }
+            }
+        } catch(e) {}
+
+        document.getElementById('about-b64').value = siteData.aboutImage || '';
+        if(siteData.aboutImage) {
+            document.getElementById('about-preview').src = siteData.aboutImage;
+            document.getElementById('about-preview').style.display = 'block';
+        }
+
+        document.getElementById('about-text-uk').value = siteData.aboutTextUk || siteData.aboutText || '';
+        document.getElementById('about-text-en').value = siteData.aboutTextEn || '';
+
+        const mode = siteData.snowMode || 'logo';
+        const radio = document.querySelector(`input[name="snow-mode"][value="${mode}"]`);
+        if (radio) radio.checked = true;
+
+        document.getElementById('port-wedding').value = (siteData.portfolio?.wedding || []).slice(0,10).join('\n');
+        document.getElementById('port-lovestory').value = (siteData.portfolio?.lovestory || []).slice(0,10).join('\n');
+        document.getElementById('port-family').value = (siteData.portfolio?.family || []).slice(0,10).join('\n');
+
+        document.getElementById('contact-order').value = siteData.contacts?.orderLink || '';
+
+        const prCont = document.getElementById('prices-container');
+        prCont.innerHTML = '';
+        (siteData.prices || []).forEach((p, i) => {
+            prCont.innerHTML += `
+                    <div class="form-group price-item" data-index="${i}">
+                        <label>Назва тарифу <span class="lang-badge">Українська</span></label>
+                        <textarea class="p-title-uk" rows="2" style="min-height: 50px;">${p.titleUk || p.title || ''}</textarea>
+                        <label>Назва тарифу <span class="lang-badge">English</span></label>
+                        <textarea class="p-title-en" rows="2" style="min-height: 50px;">${p.titleEn || ''}</textarea>
+                        <label>Фотографія</label>
+                        <input type="file" class="file-upload" accept="image/*" onchange="encodeImageFileAsURL(this, 'price-b64-${i}', 'price-preview-${i}')">
+                        <input type="text" id="price-b64-${i}" class="p-img hidden-data" value="${p.image || ''}">
+                        <img id="price-preview-${i}" class="preview-img" src="${p.image || ''}" style="display:${p.image ? 'block' : 'none'};">
+                        <label>Ціна</label>
+                        <input type="text" class="p-price" value="${p.price || ''}">
+                        <label>Послуги <span class="lang-badge">Українська</span></label>
+                        <textarea class="p-feat-uk" rows="4">${p.featuresUk || p.features || ''}</textarea>
+                        <label>Послуги <span class="lang-badge">English</span></label>
+                        <textarea class="p-feat-en" rows="4">${p.featuresEn || ''}</textarea>
+                    </div>
+                `;
+        });
+
+        renderAdminReviews();
+
+        document.getElementById('contact-title-uk').value = siteData.contacts?.titleUk || siteData.contacts?.title || '';
+        document.getElementById('contact-title-en').value = siteData.contacts?.titleEn || '';
+        document.getElementById('contact-subtitle-uk').value = siteData.contacts?.subtitleUk || siteData.contacts?.subtitle || '';
+        document.getElementById('contact-subtitle-en').value = siteData.contacts?.subtitleEn || '';
+
+        document.getElementById('contact-p1').value = siteData.contacts?.phone1 || '';
+        document.getElementById('contact-p2').value = siteData.contacts?.phone2 || '';
+        document.getElementById('contact-ig').value = siteData.contacts?.instagram || '';
+        document.getElementById('contact-tg').value = siteData.contacts?.telegram || '';
+        document.getElementById('contact-tt').value = siteData.contacts?.tiktok || '';
+        document.getElementById('contact-fb').value = siteData.contacts?.facebook || '';
+    }
+
+    function renderAdminReviews() {
+        const revCont = document.getElementById('reviews-container');
+        revCont.innerHTML = '';
+        (siteData.reviews || []).forEach((r, i) => {
+            revCont.innerHTML += `
+                    <div class="form-group review-item">
+                        <button class="delete-btn" onclick="removeReview(${i})">X</button>
+                        <label>Аватарка</label>
+                        <input type="file" class="file-upload" accept="image/*" onchange="encodeImageFileAsURL(this, 'rev-b64-${i}', 'rev-preview-${i}')">
+                        <input type="text" id="rev-b64-${i}" class="r-avatar hidden-data" value="${r.avatar || ''}">
+                        <img id="rev-preview-${i}" class="preview-avatar" src="${r.avatar || ''}" style="display:${r.avatar ? 'block' : 'none'};">
+                        <label>Імена <span class="lang-badge">Українська</span></label>
+                        <input type="text" class="r-name-uk" value="${r.nameUk || r.name || ''}">
+                        <label>Імена <span class="lang-badge">English</span></label>
+                        <input type="text" class="r-name-en" value="${r.nameEn || ''}">
+                        <label>Відгук <span class="lang-badge">Українська</span></label>
+                        <textarea class="r-text-uk" rows="4">${r.textUk || r.text || ''}</textarea>
+                        <label>Відгук <span class="lang-badge">English</span></label>
+                        <textarea class="r-text-en" rows="4">${r.textEn || ''}</textarea>
+                    </div>
+                `;
+        });
+    }
+
+    function addReview() {
+        if (!siteData.reviews) siteData.reviews = [];
+        siteData.reviews.push({ nameUk: 'Нові клієнти', nameEn: 'New clients', textUk: 'Відгук', textEn: 'Review', avatar: '' });
+        renderAdminReviews();
+    }
+
+    function removeReview(index) {
+        siteData.reviews.splice(index, 1);
+        renderAdminReviews();
+    }
+
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        if(isError) toast.classList.add('error'); else toast.classList.remove('error');
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    async function saveData() {
+        const password = document.getElementById('admin-pass').value;
+        if (!password) { showToast('Введіть пароль!', true); return; }
+
+        siteData.aboutImage = document.getElementById('about-b64').value;
+        siteData.aboutTextUk = document.getElementById('about-text-uk').value;
+        siteData.aboutTextEn = document.getElementById('about-text-en').value;
+        siteData.snowMode = document.querySelector('input[name="snow-mode"]:checked').value;
+
+        if(!siteData.portfolio) siteData.portfolio = {wedding:[], lovestory:[], family:[]};
+        siteData.portfolio.wedding = document.getElementById('port-wedding').value.split('\n').filter(l=>l.trim()).slice(0,10);
+        siteData.portfolio.lovestory = document.getElementById('port-lovestory').value.split('\n').filter(l=>l.trim()).slice(0,10);
+        siteData.portfolio.family = document.getElementById('port-family').value.split('\n').filter(l=>l.trim()).slice(0,10);
+
+        const pItems = document.querySelectorAll('.price-item');
+        siteData.prices = Array.from(pItems).map(item => ({
+            titleUk: item.querySelector('.p-title-uk').value,
+            titleEn: item.querySelector('.p-title-en').value,
+            image: item.querySelector('.p-img').value,
+            price: item.querySelector('.p-price').value,
+            featuresUk: item.querySelector('.p-feat-uk').value,
+            featuresEn: item.querySelector('.p-feat-en').value
+        }));
+
+        const rItems = document.querySelectorAll('.review-item');
+        siteData.reviews = Array.from(rItems).map(item => ({
+            avatar: item.querySelector('.r-avatar').value,
+            nameUk: item.querySelector('.r-name-uk').value,
+            nameEn: item.querySelector('.r-name-en').value,
+            textUk: item.querySelector('.r-text-uk').value,
+            textEn: item.querySelector('.r-text-en').value
+        }));
+
+        if(!siteData.contacts) siteData.contacts = {};
+        siteData.contacts.orderLink = document.getElementById('contact-order').value;
+        siteData.contacts.titleUk = document.getElementById('contact-title-uk').value;
+        siteData.contacts.titleEn = document.getElementById('contact-title-en').value;
+        siteData.contacts.subtitleUk = document.getElementById('contact-subtitle-uk').value;
+        siteData.contacts.subtitleEn = document.getElementById('contact-subtitle-en').value;
+
+        siteData.contacts.phone1 = document.getElementById('contact-p1').value;
+        siteData.contacts.phone2 = document.getElementById('contact-p2').value;
+        siteData.contacts.instagram = document.getElementById('contact-ig').value;
+        siteData.contacts.telegram = document.getElementById('contact-tg').value;
+        siteData.contacts.tiktok = document.getElementById('contact-tt').value;
+        siteData.contacts.facebook = document.getElementById('contact-fb').value;
+
+        try {
+            const response = await fetch('/api/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password, data: siteData })
+            });
+
+            if (response.ok) showToast('Дані успішно збережено!');
+            else if (response.status === 401) showToast('Невірний пароль!', true);
+            else showToast('Помилка сервера', true);
+        } catch (e) { showToast('Помилка з\'єднання', true); }
+    }
+
+    initAdmin();
+</script>
+</body>
+</html>
